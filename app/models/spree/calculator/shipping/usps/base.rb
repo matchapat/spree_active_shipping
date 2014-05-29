@@ -17,8 +17,14 @@ module Spree
           rate = rates_result[self.class.service_code]
 
           return nil unless rate
-          handling_fee_amount = rate.to_f * (Spree::ActiveShipping::Config[:handling_fee] || 0.0)
-          rate = rate.to_f + handling_fee_amount
+          international_codes = [2,16,9,11]
+          if international_codes.include?(self.class.service_code)
+            rate = rate.to_f
+          else
+            # add extra handling charge to domestic orders
+            handling_fee_amount = rate.to_f * (Spree::ActiveShipping::Config[:handling_fee] || 0.0)
+            rate = rate.to_f + handling_fee_amount
+          end
           # divide by 100 since active_shipping rates are expressed as cents
           return rate/100
         end
